@@ -1,0 +1,19 @@
+{
+  "name": "wecode-trial",
+  "version": "1.0.0",
+  "main": "src/app.ts",
+  "author": "Gabriel Magni",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./bin/app.js",
+    "dev": "ts-node ./src/app.ts"
+  },
+  "dependencies": {
+    "@types/node": "^20.5.7",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
+  }
+}
