@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer</title>
+    <style>
+        .d-none {
+            display: none;
+        }
+
+        table td, table th {
+            border: 1px black solid;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label for="name">Nome:</label>
+        <input required maxlength="150" type="text" id="name">
+        <label for="email">Email:</label>
+        <input required maxlength="150" type="email" id="email">
+        <label for="contact">Telefone:</label>
+        <input required maxlength="25" type="tel" id="contact">
+        <label for="company">Empresa:</label>
+        <input required maxlength="150" type="text" id="company">
+
+        <button class="d-none" type="reset">Cancelar edição</button>
+        <button disabled type="submit">Enviar</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Empresa</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <script>
+        var customerId = null;
+        const form = document.querySelector('form');
+        function checkValidity() {
+            form.reportValidity();
+            form.checkValidity() ?
+                form.querySelector('button[type="submit"]').removeAttribute('disabled') :
+                form.querySelector('button[type="submit"]').setAttribute('disabled', '');
+         }
+
+        form.querySelectorAll('input').forEach(item => {
+            item.addEventListener('change', checkValidity)
+        })
+        form.addEventListener('submit', async (evt) => {
+            evt.preventDefault();
+            if (!form.checkValidity()) {
+                alert('Preencha corretamete as informações solicitadas');
+                form.reportValidity();
+                return;
+            }
+            const payload = JSON.stringify({
+                name: form.querySelector('#name').value,
+                email: form.querySelector('#email').value,
+                contact: form.querySelector('#contact').value,
+                company: form.querySelector('#company').value,
+            });
+            await fetch('/api/customer', {
+                method: 'post',
+                body: payload,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(async (response) => {
+                    response = await response.json();
+                    alert(response.message || 'Falha ao realizar operação');
+                    updateCustomerListing();
+            })
+            .catch((response) => {
+                alert('Falha ao realizar operação')
+            });
+        });
+
+        async function updateCustomerListing() {
+            await fetch('/api/customer', {
+                method: 'get'
+            })
+            .then(async (response) => {
+                    response = await response.json();
+                    if (response.content && response.content.length > 0) {
+                        let tableRow = '';
+                        for (let index = 0; index < response.content.length; index++) {
+                            tableRow += /* html */`
+                            <tr>
+                                <td>${response.content[index].name}</td>
+                                <td>${response.content[index].email}</td>
+                                <td>${response.content[index].contact}</td>
+                                <td>${response.content[index].company}</td>
+                            </tr>`;
+                        }
+                        document.querySelector('table tbody').innerHTML = tableRow;
+                    }
+                })
+            .catch((response) => {
+                alert('Falha ao realizar operação')
+            });
+        }
+
+        setInterval(updateCustomerListing, 20000);
+
+        document.addEventListener("DOMContentLoaded", updateCustomerListing);
+    </script>
+</body>
+</html>

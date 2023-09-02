@@ -3,15 +3,14 @@ import { getPostHistory } from "./models/comments";
 import { AWSS3, FileS3 } from "./models/s3";
 import express from 'express'
 import CustomerRoute from "./routes/customer.crud";
-
+import CustomerFrontend from "./routes/customer.frontend";
 config();
 
 const port = process.env.PORT || 80;
 const app = express();
 
-app.use(express.json());
-
 app.use(CustomerRoute);
+app.use(CustomerFrontend);
 
 async function updateFiles() {
     const postHistory = await getPostHistory();
