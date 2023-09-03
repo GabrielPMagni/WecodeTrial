@@ -3,8 +3,9 @@ import { Customer } from '../models/customer';
 import bodyParser from 'body-parser';
 
 const route = Router();
+route.use(bodyParser.json());
 
-route.get('/api/customer', bodyParser.json(), async (req: Request, res: Response) => {
+route.get('/api/customer', async (req: Request, res: Response) => {
     const customers = await Customer.findAll();
     res.status(200).send({ content: customers});
 })

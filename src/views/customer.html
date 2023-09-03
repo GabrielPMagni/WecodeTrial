@@ -36,6 +36,7 @@
                 <th>Email</th>
                 <th>Telefone</th>
                 <th>Empresa</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -56,6 +57,10 @@
         form.querySelectorAll('input').forEach(item => {
             item.addEventListener('change', checkValidity)
         })
+        form.querySelector('button[type="reset"]').addEventListener('click', () => {
+            customerId = null;
+            form.querySelector('button[type="reset"]').classList.add('d-none');
+        });
         form.addEventListener('submit', async (evt) => {
             evt.preventDefault();
             if (!form.checkValidity()) {
@@ -69,8 +74,14 @@
                 contact: form.querySelector('#contact').value,
                 company: form.querySelector('#company').value,
             });
-            await fetch('/api/customer', {
-                method: 'post',
+            let endpoint = '/api/customer';
+            let method = 'post';
+            if (typeof customerId === 'number') {
+                method = 'put';
+                endpoint = `/api/customer/${customerId}`;
+            }
+            await fetch(endpoint, {
+                method,
                 body: payload,
                 headers: {
                     'Content-Type': 'application/json'
@@ -83,8 +94,22 @@
             })
             .catch((response) => {
                 alert('Falha ao realizar operação')
+            }).finally(() => {
+                customerId = null;
+                form.reset();
+                form.querySelector('button[type="reset"]').classList.add('d-none');
             });
         });
+
+        function editCustomer(id) {
+            customerId = Number(id);
+            const row = document.querySelector(`#customer${id}`);
+            form.querySelector('#name').value = row.querySelector('.name').innerText;
+            form.querySelector('#email').value = row.querySelector('.email').innerText;
+            form.querySelector('#contact').value = row.querySelector('.contact').innerText;
+            form.querySelector('#company').value = row.querySelector('.company').innerText;
+            form.querySelector('button[type="reset"]').classList.remove('d-none');
+        }
 
         async function updateCustomerListing() {
             await fetch('/api/customer', {
@@ -96,23 +121,23 @@
                         let tableRow = '';
                         for (let index = 0; index < response.content.length; index++) {
                             tableRow += /* html */`
-                            <tr>
-                                <td>${response.content[index].name}</td>
-                                <td>${response.content[index].email}</td>
-                                <td>${response.content[index].contact}</td>
-                                <td>${response.content[index].company}</td>
+                            <tr id="customer${response.content[index].id}">
+                                <td class="name">${response.content[index].name}</td>
+                                <td class="email">${response.content[index].email}</td>
+                                <td class="contact">${response.content[index].contact}</td>
+                                <td class="company">${response.content[index].company}</td>
+                                <td onclick="editCustomer(${response.content[index].id})">Editar</td>
                             </tr>`;
                         }
                         document.querySelector('table tbody').innerHTML = tableRow;
                     }
                 })
             .catch((response) => {
-                alert('Falha ao realizar operação')
+                alert('Falha ao recuperar informações')
             });
         }
 
         setInterval(updateCustomerListing, 20000);
-
         document.addEventListener("DOMContentLoaded", updateCustomerListing);
     </script>
 </body>
